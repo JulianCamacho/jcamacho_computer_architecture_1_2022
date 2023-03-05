@@ -2,7 +2,7 @@
 %include "file_manager.asm" 
 
 section .data
-    filename db "5.txt", 0
+    filename db "6.txt", 0
     mode     db 0x00           ; Modo de solo lectura
     buffer   times 16 db 0     ; Buffer para leer 16 bits a la vez
     fd       dd 0              ; File descriptor
