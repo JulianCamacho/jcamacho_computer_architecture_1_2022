@@ -1,11 +1,9 @@
 ;;======== FUNCIONES DE MANEJO DE ARCHIVOS ========
 
-; Entradas:
-;       edi: nombre del archivo
 
 open_input_file:
-    push ebp            ;--> Prologo de la funcion
-    mov ebp, esp        ;-|
+    push ebp                        ;--> Prologo de la funcion
+    mov ebp, esp                    ;-|
 
     mov eax, 5                      ; Codigo de llamada al sistema open() para abrir el archivo
     mov ebx, input_filename         ; edi: nombre del archivo
@@ -47,13 +45,13 @@ read_file:
 
 
 ; Entradas:
-;       edx: valor por escribir
+;       ecx: valor por escribir
 
 write_file:
     mov eax, 4                  ; Codigo de llamada al sistema write() para escribir en el archivo
     mov ebx, [output_fd]        ; File descriptor
     mov ecx, pixel              ; Valor por escribir
-    mov edx, 1                  ; Cantidad de bytes por escribir
+    mov edx, 18                 ; Cantidad de bytes por escribir
     int 0x80                    ; Ejecutar llamada al sistema
     ret
 
@@ -90,3 +88,19 @@ print_buffer:
     mov esp, ebp
     pop ebp
     ret
+
+print_pixel:
+    push ebp
+    mov ebp, esp
+
+    mov eax, 4                  ; Codigo de llamada al sistema write()
+    mov ebx, 1                  ; File descriptor para stdout
+    mov ecx, pixel              ; Buffer que contiene lo que se va a imprimir
+    mov edx, 18                 ; Cantidad de bytes por imprimir
+    int 0x80                    ; Ejecutar llamada al sistema
+
+    mov esp, ebp
+    pop ebp
+    ret
+
+
