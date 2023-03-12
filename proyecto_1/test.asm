@@ -5,14 +5,13 @@
 section .data
     output_filename     db "7.txt", 0
     input_filename      db "5.txt", 0
-    buffer              dd 0, 0              ; Buffer
-    pixel               dd 0, 0              ; Pixel desencriptado por guardar
+    buffer              dw 0, 0              ; Buffer
+    pixel               dw 0, 0              ; Pixel desencriptado por guardar
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
     msb                 db 0, 0
-    lsb                 db 0, 0   
-    mynumber             times 256 db 0  
-    num_1               db "1234", 0
+    lsb                 db 0, 0
+    encrypted_pixel     dw 0, 0   
 
 
 section .bss
@@ -30,19 +29,27 @@ _start:
 
     call read_file
     call my_atoi
-    add ebx, 3
-    _bf:
+    add eax, 3
+    ;mov ecx, eax
+    ;_bf:
     ;call print_pixel
 
     call read_file
     call my_atoi
-    add ebx, 3
-    _bp:
+    add eax, 3
+    mov ecx, eax
+    ;_bp:
+
+    call read_file
+    call my_atoi
+    add eax, 3
+    mov ecx, eax
+    _bp2:
     ;call print_pixel
 
     call close_input_file
 
     ; Salir
-    mov ebx, eax      
+    mov ebx, ecx      
     mov eax, 1 
     int 0x80            

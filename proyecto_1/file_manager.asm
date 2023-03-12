@@ -64,23 +64,24 @@ read_file:
 
 
 my_atoi:
-    mov eax, buffer             ; Cargar string en eax
-    xor ebx, ebx                
-    mov edx, 10                 ; Base de la conversion
+    mov esi, buffer             ; Cargar string en eax
+    xor eax, eax                
     convert_loop:
-        cmp byte [eax], 0       ; Verificar final del string
+        mov edx, 10             ; Base de la conversion
+        cmp byte [esi], 0       ; Verificar final del string
         je done_
-        movzx edi, byte [eax]   ; Cargar un digito
+        movzx edi, byte [esi]   ; Cargar un digito
         sub edi, '0'            ; Conversion ASCII - decimal
-        mul edx                 ; Multiplicar por la base
-        add ebx, edi            ; Sumar en el acumulador
-        inc eax                 ; Moverse a siguiente caracter
+        cmp eax, 0              ; Verificar si el resultado parcial es 0 (pasa solo la primera iteracion)
+        jz no_mult              
+        mul edx                 ; Si no es, no es necesario ajustar la decena por lo que se multiplica por 10
+        no_mult:                
+        add eax, edi            ; Se suma el nuevo digito al resultado parcial para colocarlo en el msb
+        inc esi                 ; Moverse a siguiente caracter
         jmp convert_loop       
     done_:
         ;mov [pixel], ebx
         ret
-
-
 
 
 ; Entradas:
