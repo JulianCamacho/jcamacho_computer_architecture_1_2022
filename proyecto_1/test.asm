@@ -29,22 +29,26 @@ _start:
 
     call read_file
     call my_atoi
-    add eax, 3
-    ;mov ecx, eax
-    ;_bf:
+    shl eax, 8
+    _bf:
+    mov [encrypted_pixel], eax
+    
     ;call print_pixel
 
     call read_file
     call my_atoi
-    add eax, 3
-    mov ecx, eax
+    mov edx, [encrypted_pixel]
+    add edx, eax 
+    _bp:
+    mov [encrypted_pixel], edx
+    mov ecx, [encrypted_pixel] 
     ;_bp:
 
-    call read_file
-    call my_atoi
-    add eax, 3
-    mov ecx, eax
-    _bp2:
+    ;call read_file
+    ;call my_atoi
+    ;add eax, 3
+    ;mov ecx, eax
+    ;_bp2:
     ;call print_pixel
 
     call close_input_file
