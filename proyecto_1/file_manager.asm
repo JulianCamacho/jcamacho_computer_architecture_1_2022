@@ -32,62 +32,53 @@ read_file:
     push ebp
     mov ebp, esp
 
-    mov eax, 3                      ; Codigo de llamada al sistema read() para leer el archivo
-    mov ebx, [input_fd]             ; File descriptor
-    mov ecx, buffer                 ; Buffer para almacenar lo que se lee
-    mov edx, buf_size               ; Cantidad de bytes por leer
-    int 0x80                        ; Ejecutar llamada al sistema
+    ;mov eax, 3                      ; Codigo de llamada al sistema read() para leer el archivo
+    ;mov ebx, [input_fd]             ; File descriptor
+    ;mov ecx, buffer                 ; Buffer para almacenar lo que se lee
+    ;mov edx, buf_size               ; Cantidad de bytes por leer
+    ;int 0x80                        ; Ejecutar llamada al sistema
 
-    mov esp, ebp
-    pop ebp
-    ret
-
-
-read_next_number:
-    mov esi, buffer                 ; Esi apunta al buffer
-    mov edi, esi                    ; Edi también
-    next_number:
-        mov ah, [esi]               ; Guardar en ah lo que se encuentra en el buffer
-        cmp ah, 0                   ; Verificar si es el final del buffer
-        je read_done                     ; Terminar lectura
-        cmp ah, ' '                 ; Verificar si hay un espacio
-        jne next_byte               ; Si no lo hay leer siguiente caracter
-        mov byte [esi], 0           ; Colocar null al final (necesario para atoi)
-        mov eax, format             ; Formato del string para atoi
-        mov ecx, edi                ; Colocarse en el inicio del buffer
-
-        jmp my_atoi                 ; Convertir a entero
-
-        inc esi
-        mov edi, esi                ; Empezar siguiente numero
-
-        jmp next_number
-        
-    next_byte:
-        inc esi
-        jmp next_number
-
-    my_atoi:
-        mov eax, ecx                ; Cargar string en eax
-        xor ebx, ebx                
-        mov edx, 10                 ; Base de la conversion
-        convert_loop:
-            cmp byte [eax], 0       ; Verificar final del string
-            je done
-            movzx edi, byte [eax]   ; Cargar un digito
-            sub edi, '0'            ; Conversion ASCII - decimal
-            mul edx                 ; Multiplicar por la base
-            add ebx, edi            ; Sumar en el acumulador
-            inc eax                 ; Moverse a siguiente caracter
-            loop convert_loop       
-        done:
-            mov [pixel], ebx
-            call print_pixel
-
-    read_done:
-        xor ebx, ebx
+    ; read from file
+    mov edi, buffer                     ; Guardar puntero al buffer
+    mov ecx, 1                          ; Para leer un byte a la vez
+    mov ebx, [input_fd]                 ; File descriptor
+    read_next_byte:
+        mov eax, 3                      ; Codigo de llamada al sistema read() para leer el archivo
+        mov ecx, current_byte           ; Leer y guardar el byte actual
+        mov edx, 1                      ; Cantidad de bytes por leer
+        int 0x80                        ; Ejecutar llamada al sistema
+        cmp byte [current_byte], 0      ; Verificar final del archivo
+        je done                         
+        cmp byte [current_byte], ' '    ; Verificar si el byte es un espacio
+        je done                         
+        mov eax, [current_byte]
+        mov [edi], eax                  ; Copiar el byte a su destino
+        inc edi                         ; Incrementar puntero de lectura
+        jmp read_next_byte              
+    done:
+        mov byte [edi], 0               ; Colocar terminacion del string
+        call print_buffer
+        mov esp, ebp
+        pop ebp
+        ret
 
 
+my_atoi:
+    mov eax, buffer             ; Cargar string en eax
+    xor ebx, ebx                
+    mov edx, 10                 ; Base de la conversion
+    convert_loop:
+        cmp byte [eax], 0       ; Verificar final del string
+        je done_
+        movzx edi, byte [eax]   ; Cargar un digito
+        sub edi, '0'            ; Conversion ASCII - decimal
+        mul edx                 ; Multiplicar por la base
+        add ebx, edi            ; Sumar en el acumulador
+        inc eax                 ; Moverse a siguiente caracter
+        jmp convert_loop       
+    done_:
+        ;mov [pixel], ebx
+        ret
 
 
 
