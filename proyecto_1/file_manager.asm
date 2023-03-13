@@ -36,7 +36,7 @@ open_ouput_file:
     mov edx, 0x1C0                  ; Modo para usuarios    
     int 0x80                        ; Ejecutar llamada al sistema
     mov [output_fd], eax            ; Guardar el file descriptor en memoria
-
+    ret
 
 
 ; Entradas:
@@ -112,20 +112,20 @@ read_keys_file:
 ;       eax: resultado como un entero
 
 my_atoi:
-    mov esi, buffer             ; Cargar string en eax
+    mov esi, buffer                 ; Cargar string en eax
     xor eax, eax                
     convert_loop:
-        mov edx, 10             ; Base de la conversion
-        cmp byte [esi], 0       ; Verificar final del string
+        mov edx, 10                 ; Base de la conversion
+        cmp byte [esi], 0           ; Verificar final del string
         je done_
-        movzx edi, byte [esi]   ; Cargar un digito
-        sub edi, '0'            ; Conversion ASCII - decimal
-        cmp eax, 0              ; Verificar si el resultado parcial es 0 (pasa solo la primera iteracion)
+        movzx edi, byte [esi]       ; Cargar un digito
+        sub edi, '0'                ; Conversion ASCII - decimal
+        cmp eax, 0                  ; Verificar si el resultado parcial es 0 (pasa solo la primera iteracion)
         jz no_mult              
-        mul edx                 ; Si no es, no es necesario ajustar la decena por lo que se multiplica por 10
+        mul edx                     ; Si no es, no es necesario ajustar la decena por lo que se multiplica por 10
         no_mult:                
-        add eax, edi            ; Se suma el nuevo digito al resultado parcial para colocarlo en el msb
-        inc esi                 ; Moverse a siguiente caracter
+        add eax, edi                ; Se suma el nuevo digito al resultado parcial para colocarlo en el msb
+        inc esi                     ; Moverse a siguiente caracter
         jmp convert_loop       
     done_:
         ;mov [pixel], eax
@@ -135,31 +135,97 @@ my_atoi_keys:
     mov esi, keys_buffer             ; Cargar string en eax
     xor eax, eax                
     convert_key_loop:
-        mov edx, 10             ; Base de la conversion
-        cmp byte [esi], 0       ; Verificar final del string
+        mov edx, 10                 ; Base de la conversion
+        cmp byte [esi], 0           ; Verificar final del string
         je done_key
-        movzx edi, byte [esi]   ; Cargar un digito
-        sub edi, '0'            ; Conversion ASCII - decimal
-        cmp eax, 0              ; Verificar si el resultado parcial es 0 (pasa solo la primera iteracion)
+        movzx edi, byte [esi]       ; Cargar un digito
+        sub edi, '0'                ; Conversion ASCII - decimal
+        cmp eax, 0                  ; Verificar si el resultado parcial es 0 (pasa solo la primera iteracion)
         jz no_mult_key              
-        mul edx                 ; Si no es, no es necesario ajustar la decena por lo que se multiplica por 10
-        no_mult_key:                
-        add eax, edi            ; Se suma el nuevo digito al resultado parcial para colocarlo en el msb
-        inc esi                 ; Moverse a siguiente caracter
+        mul edx                     ; Si no es, no es necesario ajustar la decena por lo que se multiplica por 10
+        no_mult_key:                        
+        add eax, edi                ; Se suma el nuevo digito al resultado parcial para colocarlo en el msb
+        inc esi                     ; Moverse a siguiente caracter
         jmp convert_key_loop       
     done_key:
         ;mov [pixel], eax
         ret
 
 
+invert_number:
+    mov eax, [decrypted_pixel]
+    xor ebx, ebx
+    digit_inversion_loop:
+        xor edx, edx 
+        mov esi, 10
+        div esi
+        _divi:
+        mov ecx, ebx                    ; Guardar modulo en ecx
+        imul ecx, 10                      ; Mover hacia la derecha una posicion
+        add ecx, edx                    ; 
+        _adii:
+        mov ebx, ecx
+        test eax, eax
+        jnz digit_inversion_loop
+        _fi:
+        mov [pixel], ebx
+        ret
+
+
+count_digits:
+    mov eax, [decrypted_pixel]      ; load the integer variable into eax
+    xor ebx, ebx                    ; initialize the counter to zero
+    count:
+        inc ebx                     ; increment the counter
+        mov edx, 0                  ; clear the high 32 bits of edx
+        mov esi, 10
+        div esi                     ; divide eax by 10 (quotient in eax, remainder in edx)
+        test eax, eax               ; check if quotient is zero
+        jnz count                   ; repeat until quotient becomes zero
+        mov [digits], ebx
+        ret
+
+
+; Entradas: 
+;       ebx: entero por convertir
+
+my_itoa:
+    ;mov esi, [decrypted_pixel]
+    ;cmp esi, 9
+    ;jle dont_invert
+    ;call invert_number 
+    ;dont_invert:
+    mov edi, output_buffer  
+    mov eax, [decrypted_pixel]
+    cmp eax, 0                      ; Verificar si el numero es cero
+    jz done__                       ; Si lo es, salir
+    convert_itoa_loop:
+        xor edx, edx 
+        mov ebx, 10                 ; Base de la conversion
+        div ebx                     ; Dividir entre 10 para obtener el lsb y partir el numero
+        add edx, '0'                ; Convertir modulo a ASCII
+        mov byte [edi], dl          ; Guardar el digito en ASCII en el buffer
+        inc edi                     ; Moverse al siguiente byte del buffer
+        cmp eax, 0                  ; Verificar si el numero es ahora cero
+        _ea:
+        jnz convert_itoa_loop       
+    done__:
+        mov byte [edi], 32          ; Agregar un espacio al final
+        ret
+
+
+
 ; Entradas:
 ;       ecx: valor por escribir
 
 write_file:
+    ;call count_digits
     mov eax, 4                  ; Codigo de llamada al sistema write() para escribir en el archivo
     mov ebx, [output_fd]        ; File descriptor
-    mov ecx, pixel              ; Valor por escribir
-    mov edx, 18                 ; Cantidad de bytes por escribir
+    mov ecx, output_buffer      ; Valor por escribir
+    ;mov edx, [digits]           ; Cantidad de bytes por escribir
+    mov edx, 3                  ; Cantidad de bytes por escribir
+    ;_v:
     int 0x80                    ; Ejecutar llamada al sistema
     ret
 
@@ -228,7 +294,7 @@ print_pixel:
 
     mov eax, 4                  ; Codigo de llamada al sistema write()
     mov ebx, 1                  ; File descriptor para stdout
-    mov ecx, pixel              ; Buffer que contiene lo que se va a imprimir
+    mov ecx, decrypted_pixel              ; Buffer que contiene lo que se va a imprimir
     mov edx, 8                 ; Cantidad de bytes por imprimir
     int 0x80                    ; Ejecutar llamada al sistema
 
