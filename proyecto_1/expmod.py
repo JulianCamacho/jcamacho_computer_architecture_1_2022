@@ -27,7 +27,7 @@ def expmod(msb, lsb, d, n):
     base = concatena_binario(msb, lsb)
     fastExpMod(base, d, n)
 
-expmod(20, 104, 200, 50)
+expmod(169, 76, 200, 50)
 
 
 # 0 5       --> 25

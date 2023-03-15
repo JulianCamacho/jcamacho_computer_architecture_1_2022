@@ -22,7 +22,9 @@ section .data
     decrypted_pixel     dw 0, 0
     digits              db 0, 0
     output_len          equ $-output_buffer  ; Largo del buffer de salida                
- 
+    counter             dw 5, 0
+    ;file_length         equ 204800
+    file_length         equ 10
 
 
 section .bss
@@ -53,40 +55,67 @@ _start:
     call open_input_file
     call open_ouput_file
 
+    mov ecx, file_length
+    push ecx                        ; Guardar el contador en el stack
+    main_loop:
+
+        ; Leer MSB
+        call read_file
+        call my_atoi
+        shl eax, 8
+        mov [encrypted_pixel], eax
+
+        ; Leer LSB y unir [MSB LSB] en encryted_pixel
+        call read_file
+        call my_atoi
+        mov edx, [encrypted_pixel]
+        add edx, eax 
+        _pix:
+        mov [encrypted_pixel], edx
+
+        ;call rsa
+
+
+        pop ecx                     ; Sacar contador del stack
+        dec ecx                     ; Decrementar contador
+        cmp ecx, 0                  ; Si no es cero se repite el loop
+        push ecx                    ; Volver a guardarlo actualizado
+        jnz main_loop
+
     ; Leer MSB
-    call read_file
-    call my_atoi
-    shl eax, 8
-    mov [encrypted_pixel], eax
-
-    ; Leer LSB y unir [MSB LSB] en encryted_pixel
-    call read_file
-    call my_atoi
-    mov edx, [encrypted_pixel]
-    add edx, eax 
-    mov [encrypted_pixel], edx
-
-    call rsa
-    call my_itoa
-    call write_file
-
-    ; Leer MSB
-    call read_file
-    call my_atoi
-    shl eax, 8
-    mov [encrypted_pixel], eax
-
-    ; Leer LSB y unir [MSB LSB] en encryted_pixel
-    call read_file
-    call my_atoi
-    mov edx, [encrypted_pixel]
-    add edx, eax 
-    mov [encrypted_pixel], edx
-
-    call rsa
-    call my_itoa
-    call write_file
-    
+    ;call read_file
+    ;call my_atoi
+    ;shl eax, 8
+    ;mov [encrypted_pixel], eax
+;
+    ;; Leer LSB y unir [MSB LSB] en encryted_pixel
+    ;call read_file
+    ;call my_atoi
+    ;mov edx, [encrypted_pixel]
+    ;add edx, eax 
+    ;mov [encrypted_pixel], edx
+;
+    ;call rsa
+    ;call my_itoa
+    ;call write_file
+;
+    ;; Leer MSB
+    ;call read_file
+    ;call my_atoi
+    ;shl eax, 8
+    ;mov [encrypted_pixel], eax
+;
+    ;; Leer LSB y unir [MSB LSB] en encryted_pixel
+    ;call read_file
+    ;call my_atoi
+    ;mov edx, [encrypted_pixel]
+    ;add edx, eax 
+    ;mov [encrypted_pixel], edx
+;
+    ;call rsa
+    ;call my_itoa
+    ;call write_file
+    ;
     call close_output_file
     call close_input_file
 
