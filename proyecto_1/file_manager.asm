@@ -131,6 +131,8 @@ my_atoi:
         ;mov [pixel], eax
         ret
 
+
+
 my_atoi_keys:
     mov esi, keys_buffer             ; Cargar string en eax
     xor eax, eax                
@@ -154,63 +156,54 @@ my_atoi_keys:
 
 invert_number:
     mov eax, [decrypted_pixel]
-    xor ebx, ebx
+    xor ebx, ebx                        ; Limpiar acumulador
     digit_inversion_loop:
-        xor edx, edx 
-        mov esi, 10
-        div esi
-        _divi:
+        xor edx, edx                    ; Limpiar registro donde se almacena el modulo
+        mov esi, 10                     ; Base
+        div esi                         ; Dividir por la base
         mov ecx, ebx                    ; Guardar modulo en ecx
         imul ecx, 10                      ; Mover hacia la derecha una posicion
         add ecx, edx                    ; 
-        _adii:
         mov ebx, ecx
         test eax, eax
         jnz digit_inversion_loop
-        _fi:
         mov [pixel], ebx
         ret
 
-
-count_digits:
-    mov eax, [decrypted_pixel]      ; load the integer variable into eax
-    xor ebx, ebx                    ; initialize the counter to zero
-    count:
-        inc ebx                     ; increment the counter
-        mov edx, 0                  ; clear the high 32 bits of edx
-        mov esi, 10
-        div esi                     ; divide eax by 10 (quotient in eax, remainder in edx)
-        test eax, eax               ; check if quotient is zero
-        jnz count                   ; repeat until quotient becomes zero
-        mov [digits], ebx
-        ret
 
 
 ; Entradas: 
 ;       ebx: entero por convertir
 
 my_itoa:
-    ;mov esi, [decrypted_pixel]
-    ;cmp esi, 9
-    ;jle dont_invert
-    ;call invert_number 
-    ;dont_invert:
-    mov edi, output_buffer  
+    mov esi, [decrypted_pixel]
+    cmp esi, 9
+    jle dont_invert
+
+    call invert_number
+    mov eax, ebx                    ; Cargar el resultado de la inversion 
+    jmp continue_
+    
+    dont_invert:
     mov eax, [decrypted_pixel]
-    cmp eax, 0                      ; Verificar si el numero es cero
-    jz done__                       ; Si lo es, salir
+
+    continue_:
+    xor edi, edi                    ; Limpiar contador de cantidad de digitos del numero
+    mov ebx, output_buffer
     convert_itoa_loop:
         xor edx, edx 
-        mov ebx, 10                 ; Base de la conversion
-        div ebx                     ; Dividir entre 10 para obtener el lsb y partir el numero
-        add edx, '0'                ; Convertir modulo a ASCII
-        mov byte [edi], dl          ; Guardar el digito en ASCII en el buffer
-        inc edi                     ; Moverse al siguiente byte del buffer
+        mov ecx, 10                 ; Base de la conversion
+        div ecx                     ; Dividir entre 10 para obtener el lsb y partir el numero
+        add dl, '0'                 ; Convertir modulo a ASCII
+        mov byte [ebx], dl          ; Guardar el digito en ASCII en el buffer
+        inc ebx                     ; Moverse al siguiente byte del buffer
+        inc edi                     ; Aumentar contador de digitos
         cmp eax, 0                  ; Verificar si el numero es ahora cero
-        _ea:
         jnz convert_itoa_loop       
-    done__:
-        mov byte [edi], 32          ; Agregar un espacio al final
+
+        mov byte [ebx], 32          ; Agregar un espacio al final
+        inc edi                     ; Aumentar el contador de digitos por el espacio
+        mov [digits], edi
         ret
 
 
@@ -219,13 +212,11 @@ my_itoa:
 ;       ecx: valor por escribir
 
 write_file:
-    ;call count_digits
     mov eax, 4                  ; Codigo de llamada al sistema write() para escribir en el archivo
     mov ebx, [output_fd]        ; File descriptor
     mov ecx, output_buffer      ; Valor por escribir
-    ;mov edx, [digits]           ; Cantidad de bytes por escribir
-    mov edx, 3                  ; Cantidad de bytes por escribir
-    ;_v:
+    mov edx, [digits]           ; Cantidad de bytes por escribir
+    ;mov edx, 3                  ; Cantidad de bytes por escribir
     int 0x80                    ; Ejecutar llamada al sistema
     ret
 
