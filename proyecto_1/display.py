@@ -9,11 +9,20 @@ window = tk.Tk()
 with open('5.txt', 'r') as f:
     data = f.read().split()
 
+with open('output.txt', 'r') as f_output:
+    output = f_output.read().split()
+
+
 # Convertir pixeles a enteros 
 data = [int(x) for x in data]
+output = [int(y) for y in output]
+
 encrypted_img = Image.new('L', (640, 960))
 encrypted_img.putdata(data)
-decrypted_img = Image.open("test.png")
+
+decrypted_img = Image.new('L', (640, 480))
+decrypted_img.putdata(output)
+#decrypted_img = Image.open("test.png")
 
 # Crear imagenes
 encrypted_photo = ImageTk.PhotoImage(encrypted_img)
