@@ -10,7 +10,7 @@ open_input_file:
     mov ecx, 0                      ; Modo solo lectura
     int 0x80                        ; Ejecutar llamada al sistema
     mov [input_fd], eax             ; Guardar el file descriptor en memoria
-
+    
     mov esp, ebp                    ;--> Epilogo de la funcion
     pop ebp                         ;-|
     ret
