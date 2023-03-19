@@ -17,13 +17,13 @@ section .data
     d_key               dw 0, 0              ; Valor d de la llave privada (exponente)
     n_key               dw 0, 0              ; Valor n de la llave privada (modulo)
     encrypted_pixel     dw 0, 0              ; Valor de pixel encriptado
-    decrypted_pixel     dw 0, 0              ; Valor de pixel desencriptado
+    decrypted_pixel     db 0, 0              ; Valor de pixel desencriptado
     digits              db 0, 0              ; Cantidad de digitos de un numero
     counter             dw 5, 0
     partial_result      dq 0, 0              ; Variable de 64 bits para guardar resultado parcial
     linebreak_counter   dw 0, 0
    ;half_file_length    equ 102400
-    half_file_length    equ 1
+    half_file_length    equ 102400
     output_len          equ $-output_buffer  ; Largo del buffer de salida                
 
 
@@ -71,7 +71,7 @@ _start:
     call open_ouput_file
 
     mov ecx, half_file_length
-    mov esi, linebreak_counter
+    mov esi, [linebreak_counter]
     push ecx                        ; Guardar el contador en el stack
     push esi
     main_loop:
@@ -89,19 +89,28 @@ _start:
         add edx, eax 
         mov [encrypted_pixel], edx
 
-        call rsa
-        call my_itoa
-        call write_file
+        call rsa                    ; Calcular pixel desencriptado por medio de RSA
+        call my_itoa                ; Pasar ese pixel a ASCII
+        call write_file             ; Escribirlo en el archivo de salida
 
         pop esi                     ; Sacar el contador de linea del stack
-        inc esi
-        cmp esi, 640
-        
+        inc esi                     ; Incrementar contador de linea
+        cmp esi, 640                ; Comparar con 640 (pixeles en una linea)
+        je place_linebreak          ; Si es igual a 640 se agrega el linebreak
+        jl cont                     ; Sino se sigue escribiendo normalmente
 
+        place_linebreak:
+            mov word [output_buffer], 0x0D      ; Caracter de nueva línea
+            mov byte [digits], 1                ; Para escribir un byte
+            call write_file                     ; Escribir en el archivo de salida
+            xor esi, esi                        ; Reiniciar el contador de línea
+        
+        cont:
         pop ecx                     ; Sacar contador del stack
         dec ecx                     ; Decrementar contador
         cmp ecx, 0                  ; Si no es cero se repite el loop
         push ecx                    ; Volver a guardarlo actualizado
+        push esi                    ; Volver a guardar contador de linea
         jnz main_loop
     call close_output_file
     call close_input_file
