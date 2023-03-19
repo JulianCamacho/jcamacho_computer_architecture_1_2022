@@ -14,15 +14,18 @@ section .data
     output_buffer       dw 0, 0              ; Buffer para escribir al archivo de salida
     keys_buffer         dw 0, 0              ; Buffer para leer llaves
     pixel               dw 0, 0              ; Pixel desencriptado por guardar
-    d_key               dw 0, 0
-    n_key               dw 0, 0
-    encrypted_pixel     dw 0, 0   
-    decrypted_pixel     dw 0, 0
-    digits              db 0, 0
-    output_len          equ $-output_buffer  ; Largo del buffer de salida                
+    d_key               dw 0, 0              ; Valor d de la llave privada (exponente)
+    n_key               dw 0, 0              ; Valor n de la llave privada (modulo)
+    encrypted_pixel     dw 0, 0              ; Valor de pixel encriptado
+    decrypted_pixel     dw 0, 0              ; Valor de pixel desencriptado
+    digits              db 0, 0              ; Cantidad de digitos de un numero
     counter             dw 5, 0
-    ;half_file_length    equ 102400
-    half_file_length     equ 102399
+    partial_result      dq 0, 0              ; Variable de 64 bits para guardar resultado parcial
+    linebreak_counter   dw 0, 0
+   ;half_file_length    equ 102400
+    half_file_length    equ 1
+    output_len          equ $-output_buffer  ; Largo del buffer de salida                
+
 
 
 section .bss
@@ -68,7 +71,9 @@ _start:
     call open_ouput_file
 
     mov ecx, half_file_length
+    mov esi, linebreak_counter
     push ecx                        ; Guardar el contador en el stack
+    push esi
     main_loop:
 
         ; Leer MSB
@@ -87,6 +92,11 @@ _start:
         call rsa
         call my_itoa
         call write_file
+
+        pop esi                     ; Sacar el contador de linea del stack
+        inc esi
+        cmp esi, 640
+        
 
         pop ecx                     ; Sacar contador del stack
         dec ecx                     ; Decrementar contador
