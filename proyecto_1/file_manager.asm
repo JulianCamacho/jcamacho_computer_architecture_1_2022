@@ -6,7 +6,7 @@ open_input_file:
     mov ebp, esp                    ;-|
 
     mov eax, 5                      ; Codigo de llamada al sistema open() para abrir el archivo
-    mov ebx, input_filename         ; edi: nombre del archivo
+    mov ebx, input_filename         ; Nombre del archivo
     mov ecx, 0                      ; Modo solo lectura
     int 0x80                        ; Ejecutar llamada al sistema
     mov [input_fd], eax             ; Guardar el file descriptor en memoria
@@ -159,12 +159,12 @@ invert_number:
         xor edx, edx                    ; Limpiar registro donde se almacena el modulo
         mov esi, 10                     ; Base
         div esi                         ; Dividir por la base
-        mov ecx, ebx                    ; Guardar modulo en ecx
-        imul ecx, 10                      ; Mover hacia la derecha una posicion
-        add ecx, edx                    ; 
-        mov ebx, ecx
-        test eax, eax
-        jnz digit_inversion_loop
+        mov ecx, ebx                    ; Guardar acumulador en ecx
+        imul ecx, 10                    ; Mover hacia la derecha una posicion
+        add ecx, edx                    ; Sumar el residuo de la division (poner como lsb) 
+        mov ebx, ecx                    ; Mover resultado a ebx
+        test eax, eax                   ; Verificar si el numero es cero
+        jnz digit_inversion_loop        ; Si no, repetir el loop
         mov [pixel], ebx
         ret
 
@@ -175,10 +175,10 @@ invert_number:
 
 my_itoa:
     mov esi, [decrypted_pixel]
-    cmp esi, 9
-    jle dont_invert
+    cmp esi, 9                      ; Comparar si el pixel es mayor a 9
+    jle dont_invert                 ; Si es menor o igual no hay que invertirlo para su escritura
 
-    call invert_number
+    call invert_number              ; Si es mayor se debe invertir
     mov eax, ebx                    ; Cargar el resultado de la inversion 
     jmp continue_
     
@@ -187,7 +187,7 @@ my_itoa:
 
     continue_:
     xor edi, edi                    ; Limpiar contador de cantidad de digitos del numero
-    mov ebx, output_buffer
+    mov ebx, output_buffer          ; Cargar direccion del output_buffer
     convert_itoa_loop:
         xor edx, edx 
         mov ecx, 10                 ; Base de la conversion
@@ -235,7 +235,7 @@ close_keys_file:
     mov ebp, esp
 
     mov eax, 6                  ; Codigo de llamada al sistema read() para leer el archivo
-    mov ebx, [keys_fd]         ; File descriptor
+    mov ebx, [keys_fd]          ; File descriptor
     int 0x80                    ; Ejecutar llamada al sistema
 
     mov esp, ebp
@@ -255,7 +255,7 @@ print_buffer:
     mov eax, 4                  ; Codigo de llamada al sistema write()
     mov ebx, 1                  ; File descriptor para stdout
     mov ecx, buffer             ; Buffer que contiene lo que se va a imprimir
-    mov edx, 8                 ; Cantidad de bytes por imprimir
+    mov edx, 8                  ; Cantidad de bytes por imprimir
     int 0x80                    ; Ejecutar llamada al sistema
 
     mov esp, ebp
@@ -282,8 +282,8 @@ print_pixel:
 
     mov eax, 4                  ; Codigo de llamada al sistema write()
     mov ebx, 1                  ; File descriptor para stdout
-    mov ecx, decrypted_pixel              ; Buffer que contiene lo que se va a imprimir
-    mov edx, 8                 ; Cantidad de bytes por imprimir
+    mov ecx, decrypted_pixel    ; Buffer que contiene lo que se va a imprimir
+    mov edx, 8                  ; Cantidad de bytes por imprimir
     int 0x80                    ; Ejecutar llamada al sistema
 
     mov esp, ebp

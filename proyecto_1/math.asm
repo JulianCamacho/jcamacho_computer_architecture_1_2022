@@ -19,11 +19,11 @@ my_mod:
     ret
 
 rsa:
-    push ebp                        ;--> Prologo de la funcion
+    push ebp                            ;--> Prologo de la funcion
     mov ebp, esp
 
     mov ebx, [d_key] 
-    bsr ecx, ebx                        ; Guardar la cantidad de digitos significativos de d
+    bsr ecx, ebx                        ; Guardar la cantidad de bits significativos de d
     mov eax, [encrypted_pixel]
     mov ebx, [n_key]
     add ecx, 1                          ; Aumentar ecx 1 para ajustar cantidad de iteraciones
@@ -43,7 +43,7 @@ rsa:
     finish_modules:                 
 
         mov esi, [d_key]
-        bsr ecx, esi
+        bsr ecx, esi                        ; Guardar la cantidad de bits significativos de d
         imul ecx, 4                         ; Multiplicar por 4 para ajustar posicion en el stack
         add esp, ecx                        ; Mover el puntero del stack hasta el primer modulo calculado
 
@@ -78,17 +78,17 @@ rsa:
             continue:
                 mov esi, [shifted_d_key]
                 shr esi, 1                  ; Si no, solo correr para evaluar el siguiente bit
-                dec ecx                     ; Se resta el numero de iteraciones
+                dec ecx                     ; Se decrementa el numero de iteraciones
                 cmp ecx, 0
                 je finish
                 jmp get_result 
 
         finish:
-            div ebx
+            div ebx                              ; Calcular ultimo modulo del acumulador 
             mov eax, edx 
             mov esi, dword [partial_result]      ; Cargar resultado parcial previo en edx
             mul esi                              ; Guardar en eax el resultado de eax (modulo parcial) y el resultado parcial hasta ahora
-            div ebx
+            div ebx                              ; Calcular modulo final del algoritmo
             mov eax, edx
 
             mov [decrypted_pixel], eax      ; Se guarda el pixel desencriptado

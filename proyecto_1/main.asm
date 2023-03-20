@@ -20,7 +20,6 @@ section .data
     encrypted_pixel     dw 0, 0              ; Valor de pixel encriptado
     decrypted_pixel     db 0, 0              ; Valor de pixel desencriptado
     digits              db 0, 0              ; Cantidad de digitos de un numero
-    counter             dw 5, 0
     partial_result      dd 1, 0              ; Variable para guardar resultado parcial
     linebreak_counter   dw 0, 0
     half_file_length    equ 102400
@@ -36,51 +35,54 @@ section .text
 
 
 _start:
-    call open_keys_file
 
-    ; Leer llave privada d (exponente)
-    call read_keys_file
-    call my_atoi_keys
-    mov [d_key], eax
+    ;;;========= Lectura de llaves =========;;;
 
-    ; Leer llave privada n (modulo)
-    call read_keys_file
-    call my_atoi_keys
-    mov [n_key], eax
+    call open_keys_file                 ; Abrir archivo de llaves
 
-    call close_keys_file
+    call read_keys_file                 ; Leer llave privada d (exponente)
+    call my_atoi_keys                   ; Convertirla a entero
+    mov [d_key], eax                    ; Guardarla en d_key
 
-    call open_input_file
-    call open_ouput_file
+    call read_keys_file                 ; Leer llave privada n (modulo)
+    call my_atoi_keys                   ; Convertirla a entero
+    mov [n_key], eax                    ; Guardarla en n_key
 
-    mov ecx, half_file_length
-    mov esi, [linebreak_counter]
-    push ecx                        ; Guardar el contador en el stack
+    call close_keys_file                ; Cerrar el archivo de llaves
+
+
+    ;;;========= Desencripción de pixeles =========;;;
+
+    call open_input_file                ; Abrir archivo de entrada
+    call open_ouput_file                ; Abrir archivo de salida
+
+    mov ecx, half_file_length           ; Cargar el numero de iteraciones
+    mov esi, [linebreak_counter]        ; Cargar contador de cambio de linea
+    push ecx                            ; Guardar ambos contadores en el stack
     push esi
+
     main_loop:
 
-        ; Leer MSB
-        call read_file
-        call my_atoi
-        shl eax, 8
-        mov [encrypted_pixel], eax
+        call read_file                      ; Leer MSB
+        call my_atoi                        ; Convertirlo a entero
+        shl eax, 8                          ; Correrlo un byte para colocar el lsb
+        mov [encrypted_pixel], eax          ; Guardar en memoria
 
-        ; Leer LSB y unir [MSB LSB] en encryted_pixel
-        call read_file
-        call my_atoi
-        mov edx, [encrypted_pixel]
-        add edx, eax 
-        mov [encrypted_pixel], edx
+        call read_file                      ; Leer LSB
+        call my_atoi                        ; Convertirlo a entero
+        mov edx, [encrypted_pixel]          ; Cargar el MSB
+        add edx, eax                        ; Sumar para colocar el LSB
+        mov [encrypted_pixel], edx          ; Guardar en memoria
 
-        call rsa                    ; Calcular pixel desencriptado por medio de RSA
-        call my_itoa                ; Pasar ese pixel a ASCII
-        call write_file             ; Escribirlo en el archivo de salida
+        call rsa                        ; Calcular pixel desencriptado por medio de RSA
+        call my_itoa                    ; Pasar ese pixel a ASCII
+        call write_file                 ; Escribirlo en el archivo de salida
 
-        pop esi                     ; Sacar el contador de linea del stack
-        inc esi                     ; Incrementar contador de linea
-        cmp esi, 640                ; Comparar con 640 (pixeles en una linea)
-        je place_linebreak          ; Si es igual a 640 se agrega el linebreak
-        jl cont                     ; Sino se sigue escribiendo normalmente
+        pop esi                         ; Sacar el contador de linea del stack
+        inc esi                         ; Incrementar contador de linea
+        cmp esi, 640                    ; Comparar con 640 (pixeles en una linea)
+        je place_linebreak              ; Si es igual a 640 se agrega el linebreak
+        jl cont                         ; Sino se sigue escribiendo normalmente
 
         place_linebreak:
             mov word [output_buffer], 0x0D      ; Caracter de nueva línea
@@ -89,17 +91,19 @@ _start:
             xor esi, esi                        ; Reiniciar el contador de línea
         
         cont:
-        pop ecx                     ; Sacar contador del stack
-        dec ecx                     ; Decrementar contador
-        cmp ecx, 0                  ; Si no es cero se repite el loop
-        push ecx                    ; Volver a guardarlo actualizado
-        push esi                    ; Volver a guardar contador de linea
+        pop ecx                         ; Sacar contador del stack
+        dec ecx                         ; Decrementar contador
+        cmp ecx, 0                      ; Si no es cero se repite el loop
+        push ecx                        ; Volver a guardarlo actualizado
+        push esi                        ; Volver a guardar contador de linea
         jnz main_loop
-    call close_output_file
-    call close_input_file
 
+    call close_output_file              ; Cerrar archivo de salida
+    call close_input_file               ; Cerrar archivo de entrada
 
-    ; Salir
+    
+    ;;;========= Salida del programa =========;;;
+
     mov ebx, ecx     
     mov eax, 1 
     int 0x80            
