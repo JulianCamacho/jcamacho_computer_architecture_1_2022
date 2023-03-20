@@ -18,24 +18,12 @@ my_mod:
     pop ebp
     ret
 
-my_complex_mod:
-    push ebp
-    mov ebp, esp
-    
-    idiv ebx
-    mov eax, edx     
-
-    mov esp, ebp
-    pop ebp
-    ret
-
-
 rsa:
     push ebp                        ;--> Prologo de la funcion
     mov ebp, esp
 
     mov ebx, [d_key] 
-    bsr ecx, ebx            ;ecx --> k
+    bsr ecx, ebx                        ; Guardar la cantidad de digitos significativos de d
     mov eax, [encrypted_pixel]
     mov ebx, [n_key]
     add ecx, 1                          ; Aumentar ecx 1 para ajustar cantidad de iteraciones
@@ -56,7 +44,6 @@ rsa:
 
         mov esi, [d_key]
         bsr ecx, esi
-        ;add ecx, 1                         ; Aumentar ecx 1 para ajustar posicion en el stack
         imul ecx, 4                         ; Multiplicar por 4 para ajustar posicion en el stack
         add esp, ecx                        ; Mover el puntero del stack hasta el primer modulo calculado
 
@@ -75,7 +62,6 @@ rsa:
             cmp esi, 1                      ; Si el lsb es uno, el modulo correspondiente se debe multiplicar
             jne continue    
             mul edi                         ; Multiplicar el modulo en el acumulador (resultados grandes quedan en edx:eax)
-            _res:
             cmp edx, 0                      ; Si el resultado ya casi llena edx (resultados de más de 48 bits para que no haya desborde previo)
             jg get_partial_result
             jle continue
@@ -106,7 +92,6 @@ rsa:
             mov eax, edx
 
             mov [decrypted_pixel], eax      ; Se guarda el pixel desencriptado
-            _aqui:
             mov esp, ebp                    ;--> Epilogo de la funcion
             pop ebp
             ret

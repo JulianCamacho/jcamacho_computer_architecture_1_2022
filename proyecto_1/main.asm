@@ -24,7 +24,6 @@ section .data
     partial_result      dd 1, 0              ; Variable para guardar resultado parcial
     linebreak_counter   dw 0, 0
     half_file_length    equ 102400
-    ;half_file_length    equ 10
     output_len          equ $-output_buffer  ; Largo del buffer de salida                
 
 
@@ -33,27 +32,10 @@ section .bss
     current_byte resb 1
 
 section .text
-    extern atoi
-    extern printf
     global _start
 
 
 _start:
-    ;call open_ouput_file
-    ;mov byte [decrypted_pixel], 36
-    ;call my_itoa
-    ;call write_file
-;
-    ;mov byte [decrypted_pixel], 189
-    ;call my_itoa
-    ;call write_file
-;
-    ;mov byte [decrypted_pixel], 7
-    ;call my_itoa   
-    ;call write_file
-;
-    ;call close_output_file
-   ; Abrir archivos
     call open_keys_file
 
     ; Leer llave privada d (exponente)

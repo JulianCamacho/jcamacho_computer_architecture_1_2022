@@ -128,7 +128,6 @@ my_atoi:
         inc esi                     ; Moverse a siguiente caracter
         jmp convert_loop       
     done_:
-        ;mov [pixel], eax
         ret
 
 
@@ -150,7 +149,6 @@ my_atoi_keys:
         inc esi                     ; Moverse a siguiente caracter
         jmp convert_key_loop       
     done_key:
-        ;mov [pixel], eax
         ret
 
 
@@ -216,7 +214,6 @@ write_file:
     mov ebx, [output_fd]        ; File descriptor
     mov ecx, output_buffer      ; Valor por escribir
     mov edx, [digits]           ; Cantidad de bytes por escribir
-    ;mov edx, 3                  ; Cantidad de bytes por escribir
     int 0x80                    ; Ejecutar llamada al sistema
     ret
 
