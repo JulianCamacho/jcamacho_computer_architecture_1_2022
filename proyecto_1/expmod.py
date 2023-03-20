@@ -1,6 +1,7 @@
 
 # x/11x $sp
 #x/11dw $sp
+# x/20dw $sp-40
 # print/d *((unsigned long long*)&partial_result)
 
 def concatena_binario(msb, lsb):
@@ -56,8 +57,8 @@ def fastExpMod(msb, lsb, expo, n):
     print(resl)
     return res
 
-#expmod(255, 255, 1631, 5963)
-fastExpMod(2, 54, 1631, 5963) #--> deja de funcionar
+expmod(7, 180, 1631, 5963)
+#fastExpMod(234, 55, 1631, 5963) #--> deja de funcionar
 
 # base^1631 mod(5963)
 

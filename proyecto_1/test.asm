@@ -4,9 +4,9 @@
 
 
 section .data
-    output_filename     db "7.txt", 0
+    output_filename     db "output.txt", 0
     keys_filename       db "llaves.txt", 0
-    input_filename      db "5.txt", 0
+    input_filename      db "input.txt", 0
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     keys_fd             dd 0, 0              ; File descriptor para el archivo de llaves
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
@@ -16,14 +16,15 @@ section .data
     pixel               dw 0, 0              ; Pixel desencriptado por guardar
     d_key               dw 0, 0              ; Valor d de la llave privada (exponente)
     n_key               dw 0, 0              ; Valor n de la llave privada (modulo)
+    shifted_d_key       dw 0, 0              ; Valor n de la llave privada (modulo)
     encrypted_pixel     dw 0, 0              ; Valor de pixel encriptado
     decrypted_pixel     db 0, 0              ; Valor de pixel desencriptado
     digits              db 0, 0              ; Cantidad de digitos de un numero
     counter             dw 5, 0
-    partial_result      dq 0, 0              ; Variable de 64 bits para guardar resultado parcial
+    partial_result      dd 1, 0              ; Variable para guardar resultado parcial
     linebreak_counter   dw 0, 0
-   ;half_file_length    equ 102400
     half_file_length    equ 102400
+    ;half_file_length    equ 10
     output_len          equ $-output_buffer  ; Largo del buffer de salida                
 
 

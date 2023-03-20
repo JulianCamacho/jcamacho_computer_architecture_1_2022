@@ -56,36 +56,57 @@ rsa:
 
         mov esi, [d_key]
         bsr ecx, esi
-        ;add ecx, 1                          ; Aumentar ecx 1 para ajustar posicion en el stack
+        ;add ecx, 1                         ; Aumentar ecx 1 para ajustar posicion en el stack
         imul ecx, 4                         ; Multiplicar por 4 para ajustar posicion en el stack
         add esp, ecx                        ; Mover el puntero del stack hasta el primer modulo calculado
 
         bsr ecx, esi
         add ecx, 1                          ; Aumentar ecx 1 para ajustar cantidad de iteraciones
         mov eax, 1                          ; Inicializar acumulador donde se guardara el resultado
+        mov ebx, [n_key]
+        mov dword [partial_result], 1
         get_result:
 
             mov edi, dword [esp]            ; Sacar del stack los modulos obtenidos, desde el primero al ultimo calculado
             sub esp, 4                      ; Restar al puntero de stack para apuntar al siguiente numero (sobre el)
-            mov ebx, esi                    ; Guardar esi (d) en ebx
+            
+            mov [shifted_d_key], esi        ; Guardar esi (d) en memoria
             and esi, 1                      ; Mascara para obtener el lsb
-            cmp esi, 1                      ; Si el lsb el uno, el modulo correspondiente se debe multiplicar
+            cmp esi, 1                      ; Si el lsb es uno, el modulo correspondiente se debe multiplicar
             jne continue    
             mul edi                         ; Multiplicar el modulo en el acumulador (resultados grandes quedan en edx:eax)
+            _res:
+            cmp edx, 0                      ; Si el resultado ya casi llena edx (resultados de más de 48 bits para que no haya desborde previo)
+            jg get_partial_result
+            jle continue
+
+            get_partial_result:
+                div ebx                               ; Realizar la division (edx:eax)/ebx para obtener el modulo
+                mov eax, edx                          ; Hacer modulo del resultado parcial
+                mov edx, dword [partial_result]       ; Cargar resultado parcial previo en edx
+                mul edx                               ; Guardar en eax el resultado de eax (modulo parcial) y el resultado parcial hasta ahora
+                mov dword [partial_result], eax       ; Volver a guardarlo en memoria
+                mov eax, 1                            ; Reiniciar eax para obtener otro resultado parcial
+                xor edx, edx
+
             continue:
-                shr ebx, 1                  ; Si no, solo correr para evaluar el siguiente bit
-                mov esi, ebx
+                mov esi, [shifted_d_key]
+                shr esi, 1                  ; Si no, solo correr para evaluar el siguiente bit
                 dec ecx                     ; Se resta el numero de iteraciones
                 cmp ecx, 0
                 je finish
                 jmp get_result 
+
         finish:
-            mov ebx, [n_key]
-            mov dword [partial_result+4], edx
-            mov dword [partial_result], eax
-            call my_complex_mod
+            div ebx
+            mov eax, edx 
+            mov esi, dword [partial_result]      ; Cargar resultado parcial previo en edx
+            mul esi                              ; Guardar en eax el resultado de eax (modulo parcial) y el resultado parcial hasta ahora
+            div ebx
+            mov eax, edx
 
             mov [decrypted_pixel], eax      ; Se guarda el pixel desencriptado
+            _aqui:
             mov esp, ebp                    ;--> Epilogo de la funcion
             pop ebp
             ret
