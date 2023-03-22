@@ -19,11 +19,14 @@ section .data
     shifted_d_key       dw 0, 0              ; Valor n de la llave privada (modulo)
     encrypted_pixel     dw 0, 0              ; Valor de pixel encriptado
     decrypted_pixel     db 0, 0              ; Valor de pixel desencriptado
-    digits              db 0, 0              ; Cantidad de digitos de un numero
+    digits_aux2         db 0, 0              ; Cantidad de digitos de un numero
     partial_result      dd 1, 0              ; Variable para guardar resultado parcial
+    digits              db 0, 0              ; Cantidad de digitos de un numero
     linebreak_counter   dw 0, 0
-    half_file_length    equ 102400
-    output_len          equ $-output_buffer  ; Largo del buffer de salida                
+    digits_aux          db 0, 0              ; Cantidad de digitos de un numero
+    
+    half_file_length    equ 102399
+    ;half_file_length    equ
 
 
 
@@ -51,7 +54,7 @@ _start:
     call close_keys_file                ; Cerrar el archivo de llaves
 
 
-    ;;;========= Desencripción de pixeles =========;;;
+    ;;;========= Desencriptación de pixeles =========;;;
 
     call open_input_file                ; Abrir archivo de entrada
     call open_ouput_file                ; Abrir archivo de salida
@@ -80,7 +83,7 @@ _start:
 
         pop esi                         ; Sacar el contador de linea del stack
         inc esi                         ; Incrementar contador de linea
-        cmp esi, 640                    ; Comparar con 640 (pixeles en una linea)
+        cmp esi, 320                    ; Comparar con 640 (pixeles en una linea)
         je place_linebreak              ; Si es igual a 640 se agrega el linebreak
         jl cont                         ; Sino se sigue escribiendo normalmente
 

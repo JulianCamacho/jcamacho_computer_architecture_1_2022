@@ -152,20 +152,47 @@ my_atoi_keys:
         ret
 
 
+
+
+; Entradas:
+;    eax: numero al cual se le cuentan los digitos
+; Salidas:
+;    ebx: cantidad de digitos del numero
+
+count_digits:
+    xor ebx, ebx                    ; Limpiar acumulador
+    cmp eax, 0                      ; Verificar si es cero
+    jz count_done                         ; Si es, solamente salir
+    count_digit_loop:
+        inc ebx                     ; Incrementar contador
+        xor edx, edx                ; Limpiar edx
+        mov ecx, 10                 ; Base por la se va a dividir
+        div ecx                     ; Dividir eax/ecx para eliminar el digito menos significativo
+        cmp eax, 0                  ; Verificar si el numero ya es cero
+        jnz count_digit_loop              ; Si no es cero, sigue el loop
+    count_done:
+        ret
+
+
+
 invert_number:
-    mov eax, [decrypted_pixel]
-    xor ebx, ebx                        ; Limpiar acumulador
+    xor edi, edi                        ; Limpiar acumulador
+    mov eax, esi                        ; esi tiene el pixel desencriptado
+    call count_digits                   ; Tener la cantidad de digitos en ebx
+    mov [digits], ebx
+    mov eax, esi                        ; esi tiene el pixel desencriptado
     digit_inversion_loop:
         xor edx, edx                    ; Limpiar registro donde se almacena el modulo
         mov esi, 10                     ; Base
         div esi                         ; Dividir por la base
-        mov ecx, ebx                    ; Guardar acumulador en ecx
+        mov ecx, edi                    ; Guardar acumulador en ecx
         imul ecx, 10                    ; Mover hacia la derecha una posicion
         add ecx, edx                    ; Sumar el residuo de la division (poner como lsb) 
-        mov ebx, ecx                    ; Mover resultado a ebx
-        test eax, eax                   ; Verificar si el numero es cero
+        mov edi, ecx                    ; Mover resultado a ebx
+        dec ebx
+        test ebx, ebx
         jnz digit_inversion_loop        ; Si no, repetir el loop
-        mov [pixel], ebx
+        mov [pixel], edi
         ret
 
 
@@ -179,30 +206,52 @@ my_itoa:
     jle dont_invert                 ; Si es menor o igual no hay que invertirlo para su escritura
 
     call invert_number              ; Si es mayor se debe invertir
-    mov eax, ebx                    ; Cargar el resultado de la inversion 
+    mov eax, edi                    ; Cargar el resultado de la inversion 
+    call count_digits               ; Volver a contar para verificar si tras la inversion faltaron ceros
+    mov [digits_aux], ebx           ; Guardar la segunda cuenta en digits_aux
+    mov eax, edi                    ; Cargar el resultado de la inversion 
     jmp continue_
-    
+
     dont_invert:
-    mov eax, [decrypted_pixel]
+    mov byte [digits], 1
+    mov byte [digits_aux], 1
+    mov eax, esi
 
     continue_:
-    xor edi, edi                    ; Limpiar contador de cantidad de digitos del numero
-    mov ebx, output_buffer          ; Cargar direccion del output_buffer
+    ;xor edi, edi                    ; Limpiar contador de cantidad de digitos del numero
+    mov ebx, output_buffer           ; Cargar direccion del output_buffer
     convert_itoa_loop:
         xor edx, edx 
-        mov ecx, 10                 ; Base de la conversion
-        div ecx                     ; Dividir entre 10 para obtener el lsb y partir el numero
-        add dl, '0'                 ; Convertir modulo a ASCII
-        mov byte [ebx], dl          ; Guardar el digito en ASCII en el buffer
-        inc ebx                     ; Moverse al siguiente byte del buffer
-        inc edi                     ; Aumentar contador de digitos
-        cmp eax, 0                  ; Verificar si el numero es ahora cero
+        mov ecx, 10                     ; Base de la conversion
+        div ecx                         ; Dividir entre 10 para obtener el lsb y partir el numero
+        add dl, '0'                     ; Convertir modulo a ASCII
+        mov byte [ebx], dl              ; Guardar el digito en ASCII en el buffer
+        inc ebx                         ; Moverse al siguiente byte del buffer
+        cmp eax, 0                      ; Verificar si el numero es ahora cero
         jnz convert_itoa_loop       
 
+        mov dl, byte [digits_aux]
+        mov cl, byte [digits]
+        cmp dl, cl                      ; Comparar si la cantidad de digitos ahora es menor
+        jl add_zeros
+
+        return_:
         mov byte [ebx], 32          ; Agregar un espacio al final
-        inc edi                     ; Aumentar el contador de digitos por el espacio
-        mov [digits], edi
+        add byte [digits], 1
         ret
+
+    add_zeros:
+        mov edi, [digits]
+        sub edi, [digits_aux]               ; Guardar en esi la diferencia de cantidad de digitos (cuantos ceros poner)
+        ;mov ebx, output_buffer              ; Cargar direccion del output_buffer
+        convert_itoa_zeros_loop:
+            xor edx, edx 
+            mov byte [ebx], 48              ; Guardar un cero en ASCII en el buffer
+            inc ebx                         ; Moverse al siguiente byte del buffer
+            dec edi
+            test edi, edi                   ; Verificar si ya no hay que poner mas ceros
+            jnz convert_itoa_zeros_loop       
+            jz return_
 
 
 
