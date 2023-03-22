@@ -57,11 +57,17 @@ def fastExpMod(msb, lsb, expo, n):
     print(resl)
     return res
 
-expmod(7, 180, 1631, 5963)
+expmod(9, 25, 1631, 5963)
 #fastExpMod(234, 55, 1631, 5963) #--> deja de funcionar
 
 # base^1631 mod(5963)
 
+# Bugs
+# 16 131  = 4227   --> 100
+# 20 43   = 5163   --> 90
+# 19 196  = 5060   --> 150
+# 
+#  
 # 0 5     = 5      --> 125
 # 234 55  = 59959  --> 
 # 2 54    = 566    --> 105
