@@ -3,6 +3,7 @@
 #x/11dw $sp
 # x/20dw $sp-40
 # print/d *((unsigned long long*)&partial_result)
+# p/d (int[256])lut_integers
 
 def concatena_binario(msb, lsb):
     msb_binario = bin(msb)[2:].zfill(8)
@@ -57,9 +58,9 @@ def fastExpMod(msb, lsb, expo, n):
     print(resl)
     return res
 
-expmod(9, 25, 1631, 5963)
+expmod(5, 25, 1531, 2747)
 #fastExpMod(234, 55, 1631, 5963) #--> deja de funcionar
-
+# 428 -> 92
 # base^1631 mod(5963)
 
 # Bugs
