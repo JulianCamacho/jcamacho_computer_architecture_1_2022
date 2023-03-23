@@ -6,10 +6,10 @@ window = tk.Tk()
 
 # Cargar imagenes
 # Manejo del archivo 
-with open('input.txt', 'r') as f:
+with open('0_640_480_2.txt', 'r') as f:
     data = f.read().split()
 
-with open('output.txt', 'r') as f_output:
+with open('output_test.txt', 'r') as f_output:
     output = f_output.read().split()
 
 
@@ -17,10 +17,10 @@ with open('output.txt', 'r') as f_output:
 data = [int(x) for x in data]
 output = [int(y) for y in output]
 
-encrypted_img = Image.new('L', (320, 640))
+encrypted_img = Image.new('L', (640, 960))
 encrypted_img.putdata(data)
 
-decrypted_img = Image.new('L', (320, 320))
+decrypted_img = Image.new('L', (640, 480))
 decrypted_img.putdata(output)
 
 # Crear imagenes

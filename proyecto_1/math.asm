@@ -25,6 +25,11 @@ rsa:
     mov ebx, [d_key] 
     bsr ecx, ebx                        ; Guardar la cantidad de bits significativos de d
     mov eax, [encrypted_pixel]
+
+    mov esi, lut_integers               ; Puntero al inicio del lut
+    mov ebx, [lut_index]                ; Cargar indice donde se guardara
+    mov dword [esi + ebx*4], eax        ; Guardar el entero de encrypted pixel
+
     mov ebx, [n_key]
     add ecx, 1                          ; Aumentar ecx 1 para ajustar cantidad de iteraciones
     
@@ -91,7 +96,12 @@ rsa:
             div ebx                              ; Calcular modulo final del algoritmo
             mov eax, edx
 
-            mov [decrypted_pixel], eax      ; Se guarda el pixel desencriptado
-            mov esp, ebp                    ;--> Epilogo de la funcion
+            mov [decrypted_pixel], eax           ; Se guarda el pixel desencriptado
+
+            mov esi, lut_results               ; Puntero al inicio del lut
+            mov ebx, [lut_index]                 ; Cargar indice donde se guardara
+            mov dword [esi+ebx*4], eax       ; Guardar el entero de decrypted pixel
+
+            mov esp, ebp                         ;--> Epilogo de la funcion
             pop ebp
             ret

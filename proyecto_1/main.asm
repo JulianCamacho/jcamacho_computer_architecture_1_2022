@@ -4,9 +4,9 @@
 
 
 section .data
-    output_filename     db "output.txt", 0
-    keys_filename       db "llaves.txt", 0
-    input_filename      db "input.txt", 0
+    output_filename     db "output_test.txt", 0
+    keys_filename       db "llave_0.txt", 0
+    input_filename      db "0_640_480_2.txt", 0
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     keys_fd             dd 0, 0              ; File descriptor para el archivo de llaves
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
@@ -24,9 +24,13 @@ section .data
     digits              db 0, 0              ; Cantidad de digitos de un numero
     linebreak_counter   dw 0, 0
     digits_aux          db 0, 0              ; Cantidad de digitos de un numero
-    
-    half_file_length    equ 102399
-    ;half_file_length    equ
+    aux                 dw 0, 0
+    lut_integers        dd 256 dup(0)        ; Inicializar lookup table de pixeles encriptados
+    lut_results         dd 256 dup(0)        ; Inicializar lookup table de resultados
+    lut_index           db 0, 0              ; Posicion para agregar valores en las lookup tables
+
+    half_file_length    equ 307199
+    ;half_file_length    equ 51000
 
 
 
@@ -54,7 +58,7 @@ _start:
     call close_keys_file                ; Cerrar el archivo de llaves
 
 
-    ;;;========= Desencriptación de pixeles =========;;;
+    ;;;========= Desencriptacion de pixeles =========;;;
 
     call open_input_file                ; Abrir archivo de entrada
     call open_ouput_file                ; Abrir archivo de salida
@@ -77,13 +81,49 @@ _start:
         add edx, eax                        ; Sumar para colocar el LSB
         mov [encrypted_pixel], edx          ; Guardar en memoria
 
-        call rsa                        ; Calcular pixel desencriptado por medio de RSA
+
+        ;;=== Optimizacion ===;;
+
+        mov ecx, 0 
+        xor eax, eax
+        mov esi, lut_integers         ; Puntero al inicio del lut
+        search_in_lut:
+            mov ebx, [esi + ecx*4]          ; Cargar valor del array en la posicion cx
+            cmp edx, ebx                    ; Verificar si es igual al elemento
+            je value_found
+            cmp ebx, 0                      ; Verificar si se encontro un cero 
+            je zero_found     
+            jne next
+            zero_found:
+                inc eax                     ; Si se encontro un cero aumentar contador
+                jmp next
+
+            next:
+            cmp eax, 2                      ; Si ya se encontraron dos ceros, no esta en el lut
+            je not_in_lut
+            inc ecx                         ; Incrementar posicion y contador del loop
+            cmp ecx, 256 
+            jl search_in_lut
+
+            
+
+        not_in_lut:
+        call rsa                            ; Calcular pixel desencriptado por medio de RSA
+        add dword [lut_index], 1                  ; Aumentar posicion donde guardar
+        jmp go_on                           ; Y continuar normalmente
+
+        value_found:
+            mov esi, lut_results
+            mov eax, [esi+ecx*4]               ; Si se encontro, cargar la misma posicion de lut_res
+            mov [decrypted_pixel], eax      ; Mover ese resultado a decrypted pixel y seguir
+
+        go_on:
         call my_itoa                    ; Pasar ese pixel a ASCII
         call write_file                 ; Escribirlo en el archivo de salida
 
         pop esi                         ; Sacar el contador de linea del stack
         inc esi                         ; Incrementar contador de linea
-        cmp esi, 320                    ; Comparar con 640 (pixeles en una linea)
+        cmp esi, 640                    ; Comparar con 640 (pixeles en una linea)
         je place_linebreak              ; Si es igual a 640 se agrega el linebreak
         jl cont                         ; Sino se sigue escribiendo normalmente
 
