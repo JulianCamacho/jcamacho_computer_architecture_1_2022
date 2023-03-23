@@ -4,9 +4,9 @@
 
 
 section .data
-    output_filename     db "output_test.txt", 0
-    keys_filename       db "llave_0.txt", 0
-    input_filename      db "0_640_480_2.txt", 0
+    output_filename     db "./test_2/output.txt", 0
+    keys_filename       db "./test_2/llaves.txt", 0
+    input_filename      db "./test_2/input.txt", 0
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     keys_fd             dd 0, 0              ; File descriptor para el archivo de llaves
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
@@ -22,15 +22,15 @@ section .data
     digits_aux2         db 0, 0              ; Cantidad de digitos de un numero
     partial_result      dd 1, 0              ; Variable para guardar resultado parcial
     digits              db 0, 0              ; Cantidad de digitos de un numero
-    linebreak_counter   dw 0, 0
+    linebreak_counter   dw 0, 0              ; Contador para determinar salto de linea
     digits_aux          db 0, 0              ; Cantidad de digitos de un numero
-    aux                 dw 0, 0
+    aux                 dw 0, 0              ; Variable auxiliar
     lut_integers        dd 256 dup(0)        ; Inicializar lookup table de pixeles encriptados
     lut_results         dd 256 dup(0)        ; Inicializar lookup table de resultados
     lut_index           db 0, 0              ; Posicion para agregar valores en las lookup tables
 
-    half_file_length    equ 307199
-    ;half_file_length    equ 51000
+    half_file_length    equ 307199           ; Cantidad de pixeles por desencriptar     
+    ;half_file_length    equ 102399
 
 
 
@@ -86,7 +86,7 @@ _start:
 
         mov ecx, 0 
         xor eax, eax
-        mov esi, lut_integers         ; Puntero al inicio del lut
+        mov esi, lut_integers               ; Puntero al inicio del lut
         search_in_lut:
             mov ebx, [esi + ecx*4]          ; Cargar valor del array en la posicion cx
             cmp edx, ebx                    ; Verificar si es igual al elemento
@@ -102,19 +102,17 @@ _start:
             cmp eax, 2                      ; Si ya se encontraron dos ceros, no esta en el lut
             je not_in_lut
             inc ecx                         ; Incrementar posicion y contador del loop
-            cmp ecx, 256 
+            cmp ecx, 256                    ; Verificar si ya se llego al final del lut
             jl search_in_lut
 
-            
-
-        not_in_lut:
+        not_in_lut:                         ; Si el pixel no esta en el lut
         call rsa                            ; Calcular pixel desencriptado por medio de RSA
-        add dword [lut_index], 1                  ; Aumentar posicion donde guardar
+        add dword [lut_index], 1            ; Aumentar posicion donde guardar
         jmp go_on                           ; Y continuar normalmente
 
         value_found:
-            mov esi, lut_results
-            mov eax, [esi+ecx*4]               ; Si se encontro, cargar la misma posicion de lut_res
+            mov esi, lut_results            ; Cargar puntero al lut de resultados
+            mov eax, [esi+ecx*4]            ; Si se encontro, cargar la misma posicion de lut_res
             mov [decrypted_pixel], eax      ; Mover ese resultado a decrypted pixel y seguir
 
         go_on:
