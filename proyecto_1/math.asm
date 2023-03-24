@@ -98,9 +98,9 @@ rsa:
 
             mov [decrypted_pixel], eax           ; Se guarda el pixel desencriptado
 
-            mov esi, lut_results               ; Puntero al inicio del lut
+            mov esi, lut_results                 ; Puntero al inicio del lut
             mov ebx, [lut_index]                 ; Cargar indice donde se guardara
-            mov dword [esi+ebx*4], eax       ; Guardar el entero de decrypted pixel
+            mov dword [esi+ebx*4], eax           ; Guardar el entero de decrypted pixel
 
             mov esp, ebp                         ;--> Epilogo de la funcion
             pop ebp

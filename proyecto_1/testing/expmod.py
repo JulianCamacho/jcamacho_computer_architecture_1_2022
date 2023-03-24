@@ -4,6 +4,7 @@
 # x/20dw $sp-40
 # print/d *((unsigned long long*)&partial_result)
 # p/d (int[256])lut_integers
+# git log
 
 def concatena_binario(msb, lsb):
     msb_binario = bin(msb)[2:].zfill(8)

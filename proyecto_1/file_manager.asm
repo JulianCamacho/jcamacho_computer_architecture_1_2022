@@ -66,7 +66,6 @@ read_file:
         jmp read_next_byte              
     done:
         mov byte [edi], 0               ; Colocar terminacion del string
-        call print_buffer
         mov esp, ebp
         pop ebp
         ret
@@ -100,7 +99,6 @@ read_keys_file:
         jmp read_next_key_byte              
     key_done:
         mov byte [edi], 0               ; Colocar terminacion del string
-        call print_keys_buffer
         mov esp, ebp
         pop ebp
         ret
@@ -133,7 +131,7 @@ my_atoi:
 
 
 my_atoi_keys:
-    mov esi, keys_buffer             ; Cargar string en eax
+    mov esi, keys_buffer            ; Cargar string en eax
     xor eax, eax                
     convert_key_loop:
         mov edx, 10                 ; Base de la conversion
@@ -162,14 +160,14 @@ my_atoi_keys:
 count_digits:
     xor ebx, ebx                    ; Limpiar acumulador
     cmp eax, 0                      ; Verificar si es cero
-    jz count_done                         ; Si es, solamente salir
+    jz count_done                   ; Si es, solamente salir
     count_digit_loop:
         inc ebx                     ; Incrementar contador
         xor edx, edx                ; Limpiar edx
         mov ecx, 10                 ; Base por la se va a dividir
         div ecx                     ; Dividir eax/ecx para eliminar el digito menos significativo
         cmp eax, 0                  ; Verificar si el numero ya es cero
-        jnz count_digit_loop              ; Si no es cero, sigue el loop
+        jnz count_digit_loop        ; Si no es cero, sigue el loop
     count_done:
         ret
 
@@ -179,7 +177,7 @@ invert_number:
     xor edi, edi                        ; Limpiar acumulador
     mov eax, esi                        ; esi tiene el pixel desencriptado
     call count_digits                   ; Tener la cantidad de digitos en ebx
-    mov [digits], ebx
+    mov [digits], ebx                   ; Guardar cantidad de digitos
     mov eax, esi                        ; esi tiene el pixel desencriptado
     digit_inversion_loop:
         xor edx, edx                    ; Limpiar registro donde se almacena el modulo
@@ -213,13 +211,12 @@ my_itoa:
     jmp continue_
 
     dont_invert:
-    mov byte [digits], 1
-    mov byte [digits_aux], 1
+    mov byte [digits], 1            ; Si no hay que invertirlo se establecen ambas cantidades en 1
+    mov byte [digits_aux], 1        ; ya que no habra que verificar si tiene ceros
     mov eax, esi
 
     continue_:
-    ;xor edi, edi                    ; Limpiar contador de cantidad de digitos del numero
-    mov ebx, output_buffer           ; Cargar direccion del output_buffer
+    mov ebx, output_buffer              ; Cargar direccion del output_buffer
     convert_itoa_loop:
         xor edx, edx 
         mov ecx, 10                     ; Base de la conversion
@@ -236,14 +233,13 @@ my_itoa:
         jl add_zeros
 
         return_:
-        mov byte [ebx], 32          ; Agregar un espacio al final
+        mov byte [ebx], 32              ; Agregar un espacio al final
         add byte [digits], 1
         ret
 
     add_zeros:
         mov edi, [digits]
         sub edi, [digits_aux]               ; Guardar en esi la diferencia de cantidad de digitos (cuantos ceros poner)
-        ;mov ebx, output_buffer              ; Cargar direccion del output_buffer
         convert_itoa_zeros_loop:
             xor edx, edx 
             mov byte [ebx], 48              ; Guardar un cero en ASCII en el buffer

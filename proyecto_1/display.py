@@ -3,13 +3,14 @@ from PIL import Image, ImageTk
 
 # Ventana de Tkinter
 window = tk.Tk()
+window.title('Desencriptación mediante RSA')
 
 # Cargar imagenes
 # Manejo del archivo 
-with open('0_640_480_2.txt', 'r') as f:
+with open('input.txt', 'r') as f:
     data = f.read().split()
 
-with open('output_test.txt', 'r') as f_output:
+with open('output.txt', 'r') as f_output:
     output = f_output.read().split()
 
 
