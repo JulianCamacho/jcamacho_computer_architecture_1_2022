@@ -7,10 +7,10 @@ window.title('Desencriptación mediante RSA')
 
 # Cargar imagenes
 # Manejo del archivo 
-with open('./test_2/input.txt', 'r') as f:
+with open('input.txt', 'r') as f:
     data = f.read().split()
 
-with open('./test_2/output.txt', 'r') as f_output:
+with open('output.txt', 'r') as f_output:
     output = f_output.read().split()
 
 

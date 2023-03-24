@@ -4,9 +4,9 @@
 
 
 section .data
-    output_filename     db "./test_2/output.txt", 0
-    keys_filename       db "./test_2/llaves.txt", 0
-    input_filename      db "./test_2/input.txt", 0
+    output_filename     db "output.txt", 0
+    keys_filename       db "llaves.txt", 0
+    input_filename      db "input.txt", 0
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     keys_fd             dd 0, 0              ; File descriptor para el archivo de llaves
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
