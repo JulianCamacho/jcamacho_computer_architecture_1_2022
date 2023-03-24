@@ -66,6 +66,7 @@ read_file:
         jmp read_next_byte              
     done:
         mov byte [edi], 0               ; Colocar terminacion del string
+        call print_buffer
         mov esp, ebp
         pop ebp
         ret
@@ -99,6 +100,7 @@ read_keys_file:
         jmp read_next_key_byte              
     key_done:
         mov byte [edi], 0               ; Colocar terminacion del string
+        call print_keys_buffer
         mov esp, ebp
         pop ebp
         ret

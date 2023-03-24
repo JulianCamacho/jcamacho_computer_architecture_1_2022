@@ -24,11 +24,13 @@ rsa:
 
     mov ebx, [d_key] 
     bsr ecx, ebx                        ; Guardar la cantidad de bits significativos de d
+    _p:
     mov eax, [encrypted_pixel]
 
-    mov esi, lut_integers               ; Puntero al inicio del lut
-    mov ebx, [lut_index]                ; Cargar indice donde se guardara
-    mov dword [esi + ebx*4], eax        ; Guardar el entero de encrypted pixel
+    ;mov esi, lut_integers               ; Puntero al inicio del lut
+    ;mov ebx, [lut_index]                ; Cargar indice donde se guardara
+    ;_pp:
+    ;mov dword [esi + ebx*4], eax        ; Guardar el entero de encrypted pixel
 
     mov ebx, [n_key]
     add ecx, 1                          ; Aumentar ecx 1 para ajustar cantidad de iteraciones
@@ -98,9 +100,9 @@ rsa:
 
             mov [decrypted_pixel], eax           ; Se guarda el pixel desencriptado
 
-            mov esi, lut_results                 ; Puntero al inicio del lut
-            mov ebx, [lut_index]                 ; Cargar indice donde se guardara
-            mov dword [esi+ebx*4], eax           ; Guardar el entero de decrypted pixel
+            ;mov esi, lut_results                 ; Puntero al inicio del lut
+            ;mov ebx, [lut_index]                 ; Cargar indice donde se guardara
+            ;mov dword [esi+ebx*4], eax           ; Guardar el entero de decrypted pixel
 
             mov esp, ebp                         ;--> Epilogo de la funcion
             pop ebp

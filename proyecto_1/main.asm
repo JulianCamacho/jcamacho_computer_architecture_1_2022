@@ -4,9 +4,9 @@
 
 
 section .data
-    output_filename     db "output.txt", 0
-    keys_filename       db "llaves.txt", 0
-    input_filename      db "input.txt", 0
+    output_filename     db "./rev_2/output.txt", 0
+    keys_filename       db "./rev_2/llave_3.txt", 0
+    input_filename      db "./rev_2/13.txt", 0
     input_fd            dd 0, 0              ; File descriptor para el archivo de entrada
     keys_fd             dd 0, 0              ; File descriptor para el archivo de llaves
     output_fd           dd 0, 0              ; File descriptor para el archivo de salida
@@ -30,7 +30,7 @@ section .data
     lut_index           db 0, 0              ; Posicion para agregar valores en las lookup tables
 
     half_file_length    equ 307199           ; Cantidad de pixeles por desencriptar     
-    ;half_file_length    equ 102399
+    ;half_file_length    equ 1
 
 
 
@@ -83,39 +83,39 @@ _start:
 
 
         ;;=== Optimizacion ===;;
-
-        mov ecx, 0 
-        xor eax, eax
-        mov esi, lut_integers               ; Puntero al inicio del lut
-        search_in_lut:
-            mov ebx, [esi + ecx*4]          ; Cargar valor del array en la posicion cx
-            cmp edx, ebx                    ; Verificar si es igual al elemento
-            je value_found
-            cmp ebx, 0                      ; Verificar si se encontro un cero 
-            je zero_found     
-            jne next
-            zero_found:
-                inc eax                     ; Si se encontro un cero aumentar contador
-                jmp next
-
-            next:
-            cmp eax, 2                      ; Si ya se encontraron dos ceros, no esta en el lut
-            je not_in_lut
-            inc ecx                         ; Incrementar posicion y contador del loop
-            cmp ecx, 256                    ; Verificar si ya se llego al final del lut
-            jl search_in_lut
-
-        not_in_lut:                         ; Si el pixel no esta en el lut
+;
+        ;mov ecx, 0 
+        ;xor eax, eax
+        ;mov esi, lut_integers               ; Puntero al inicio del lut
+        ;search_in_lut:
+        ;    mov ebx, [esi + ecx*4]          ; Cargar valor del array en la posicion cx
+        ;    cmp edx, ebx                    ; Verificar si es igual al elemento
+        ;    je value_found
+        ;    cmp ebx, 0                      ; Verificar si se encontro un cero 
+        ;    je zero_found     
+        ;    jne next
+        ;    zero_found:
+        ;        inc eax                     ; Si se encontro un cero aumentar contador
+        ;        jmp next
+;
+        ;    next:
+        ;    cmp eax, 2                      ; Si ya se encontraron dos ceros, no esta en el lut
+        ;    je not_in_lut
+        ;    inc ecx                         ; Incrementar posicion y contador del loop
+        ;    cmp ecx, 256                    ; Verificar si ya se llego al final del lut
+        ;    jl search_in_lut
+;
+        ;not_in_lut:                         ; Si el pixel no esta en el lut
         call rsa                            ; Calcular pixel desencriptado por medio de RSA
-        add dword [lut_index], 1            ; Aumentar posicion donde guardar
-        jmp go_on                           ; Y continuar normalmente
+        ;add dword [lut_index], 1            ; Aumentar posicion donde guardar
+        ;jmp go_on                           ; Y continuar normalmente
 
-        value_found:
-            mov esi, lut_results            ; Cargar puntero al lut de resultados
-            mov eax, [esi+ecx*4]            ; Si se encontro, cargar la misma posicion de lut_res
-            mov [decrypted_pixel], eax      ; Mover ese resultado a decrypted pixel y seguir
+        ;value_found:
+        ;    mov esi, lut_results            ; Cargar puntero al lut de resultados
+        ;    mov eax, [esi+ecx*4]            ; Si se encontro, cargar la misma posicion de lut_res
+        ;    mov [decrypted_pixel], eax      ; Mover ese resultado a decrypted pixel y seguir
 
-        go_on:
+        ;go_on:
         call my_itoa                    ; Pasar ese pixel a ASCII
         call write_file                 ; Escribirlo en el archivo de salida
 
